@@ -1,11 +1,12 @@
 
 import React, { useState, useRef } from 'react';
 import QRCode from 'react-qr-code';
-import { Download, Link2, Share2, Copy, Facebook, Twitter } from 'lucide-react';
+import { Download, Link2, Share2, Copy, Facebook, Twitter, Palette, Ruler } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
@@ -100,27 +101,41 @@ const Index = () => {
           {/* Input and Controls */}
           <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center pb-6">
-              <CardTitle className="text-2xl text-gray-800">
+              <CardTitle className="text-2xl text-gray-800 flex items-center justify-center gap-2">
+                <Palette className="w-6 h-6 text-purple-600" />
                 Customize Your QR Code
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">URL</label>
+            <CardContent className="space-y-8">
+              {/* URL Input Section */}
+              <div className="space-y-3">
+                <Label className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <Link2 className="w-4 h-4" />
+                  Website URL
+                </Label>
                 <Input
                   type="url"
                   placeholder="https://example.com"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="text-lg h-14 border-2 border-gray-200 focus:border-purple-500 transition-colors duration-200"
+                  className="text-lg h-14 border-2 border-gray-200 focus:border-purple-500 transition-colors duration-200 bg-white/70"
                 />
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Size: {qrSize[0]}px
-                  </label>
+              {/* Size Control Section */}
+              <div className="space-y-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
+                <Label className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <Ruler className="w-4 h-4" />
+                  QR Code Size
+                </Label>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Small</span>
+                    <span className="font-medium text-purple-600 bg-purple-100 px-3 py-1 rounded-full">
+                      {qrSize[0]}px
+                    </span>
+                    <span className="text-sm text-gray-600">Large</span>
+                  </div>
                   <Slider
                     value={qrSize}
                     onValueChange={setQrSize}
@@ -130,70 +145,86 @@ const Index = () => {
                     className="w-full"
                   />
                 </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Foreground Color</label>
-                    <div className="flex items-center space-x-2">
+              {/* Color Customization Section */}
+              <div className="space-y-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-100">
+                <Label className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <Palette className="w-4 h-4" />
+                  Color Theme
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-gray-700">QR Code Color</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
                       <input
                         type="color"
                         value={fgColor}
                         onChange={(e) => setFgColor(e.target.value)}
-                        className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                        className="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                       />
-                      <Input
-                        value={fgColor}
-                        onChange={(e) => setFgColor(e.target.value)}
-                        className="flex-1"
-                      />
+                      <div className="flex-1">
+                        <Input
+                          value={fgColor}
+                          onChange={(e) => setFgColor(e.target.value)}
+                          className="text-sm font-mono"
+                          placeholder="#000000"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Background Color</label>
-                    <div className="flex items-center space-x-2">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-gray-700">Background Color</Label>
+                    <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-gray-200">
                       <input
                         type="color"
                         value={bgColor}
                         onChange={(e) => setBgColor(e.target.value)}
-                        className="w-12 h-12 rounded-lg border-2 border-gray-200 cursor-pointer"
+                        className="w-12 h-12 rounded-lg border-2 border-gray-300 cursor-pointer shadow-sm hover:shadow-md transition-shadow"
                       />
-                      <Input
-                        value={bgColor}
-                        onChange={(e) => setBgColor(e.target.value)}
-                        className="flex-1"
-                      />
+                      <div className="flex-1">
+                        <Input
+                          value={bgColor}
+                          onChange={(e) => setBgColor(e.target.value)}
+                          className="text-sm font-mono"
+                          placeholder="#ffffff"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Share Section */}
-              <div className="space-y-4 pt-4 border-t border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800">Share</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-4 p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-xl border border-orange-100">
+                <Label className="text-base font-semibold text-gray-800 flex items-center gap-2">
+                  <Share2 className="w-4 h-4" />
+                  Share Options
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Button
                     onClick={copyToClipboard}
                     variant="outline"
-                    className="flex-1 min-w-0"
+                    className="flex items-center gap-2 bg-white hover:bg-gray-50 border-2 hover:border-blue-300 transition-all duration-200"
                   >
-                    <Copy className="w-4 h-4 mr-2" />
+                    <Copy className="w-4 h-4" />
                     Copy URL
                   </Button>
                   <Button
                     onClick={() => shareToSocial('twitter')}
                     variant="outline"
-                    className="flex-1 min-w-0"
+                    className="flex items-center gap-2 bg-white hover:bg-blue-50 border-2 hover:border-blue-400 transition-all duration-200"
                   >
-                    <Twitter className="w-4 h-4 mr-2" />
+                    <Twitter className="w-4 h-4" />
                     Twitter
                   </Button>
                   <Button
                     onClick={() => shareToSocial('facebook')}
                     variant="outline"
-                    className="flex-1 min-w-0"
+                    className="flex items-center gap-2 bg-white hover:bg-blue-50 border-2 hover:border-blue-600 transition-all duration-200"
                   >
-                    <Facebook className="w-4 h-4 mr-2" />
+                    <Facebook className="w-4 h-4" />
                     Facebook
                   </Button>
                 </div>
