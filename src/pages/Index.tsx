@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import QRCode from 'react-qr-code';
 import { Download, QrCode, Settings, Palette, Ruler, Sparkles, Shield, Zap } from 'lucide-react';
@@ -45,43 +44,117 @@ const Index = () => {
   };
 
   const downloadQRCode = () => {
+    if (!url) {
+      toast({
+        title: "No URL provided",
+        description: "Please enter a URL to generate a QR code",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsGenerating(true);
     
+    // Small delay to show loading animation
     setTimeout(() => {
       const svg = qrRef.current?.querySelector('svg');
       if (!svg) {
         setIsGenerating(false);
+        toast({
+          title: "Download failed",
+          description: "Could not find QR code to download",
+          variant: "destructive",
+        });
         return;
       }
 
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+      try {
+        // Create a canvas to convert SVG to PNG
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setIsGenerating(false);
+          toast({
+            title: "Download failed",
+            description: "Canvas not supported in your browser",
+            variant: "destructive",
+          });
+          return;
+        }
 
-      canvas.width = qrSize[0];
-      canvas.height = qrSize[0];
+        const scaleFactor = 2; // For higher quality
+        canvas.width = qrSize[0] * scaleFactor;
+        canvas.height = qrSize[0] * scaleFactor;
 
-      img.onload = () => {
-        if (ctx) {
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Set background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Convert SVG to image
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+          // Draw the image on canvas
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          const pngFile = canvas.toDataURL('image/png');
-          const downloadLink = document.createElement('a');
-          downloadLink.download = 'qrcode.png';
-          downloadLink.href = pngFile;
-          downloadLink.click();
+          // Create download link
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const downloadUrl = URL.createObjectURL(blob);
+              const downloadLink = document.createElement('a');
+              downloadLink.download = `qr-code-${Date.now()}.png`;
+              downloadLink.href = downloadUrl;
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
+              
+              // Cleanup
+              URL.revokeObjectURL(downloadUrl);
+              
+              setDownloaded(true);
+              setTimeout(() => setDownloaded(false), 3000);
+              
+              toast({
+                title: "Download successful",
+                description: "QR code has been downloaded as PNG",
+              });
+            } else {
+              toast({
+                title: "Download failed",
+                description: "Could not create image file",
+                variant: "destructive",
+              });
+            }
+          }, 'image/png', 1.0);
           
-          setDownloaded(true);
-          setTimeout(() => setDownloaded(false), 3000);
-        }
-        setIsGenerating(false);
-      };
+          // Cleanup
+          URL.revokeObjectURL(svgUrl);
+          setIsGenerating(false);
+        };
+        
+        img.onerror = () => {
+          URL.revokeObjectURL(svgUrl);
+          setIsGenerating(false);
+          toast({
+            title: "Download failed",
+            description: "Could not process QR code image",
+            variant: "destructive",
+          });
+        };
 
-      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
-    }, 2000);
+        img.src = svgUrl;
+      } catch (error) {
+        setIsGenerating(false);
+        toast({
+          title: "Download failed",
+          description: "An error occurred while downloading",
+          variant: "destructive",
+        });
+      }
+    }, 500);
   };
 
   const copyToClipboard = async () => {
@@ -230,7 +303,7 @@ const Index = () => {
                         <div className="flex gap-4 items-center">
                           <AnimatedDownloadButton 
                             onClick={downloadQRCode}
-                            disabled={isGenerating}
+                            disabled={isGenerating || !url}
                             downloaded={downloaded}
                           />
                           
