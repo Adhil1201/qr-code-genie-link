@@ -15,9 +15,9 @@ import ProfileCard from '@/components/ProfileCard';
 import QRScanner from '@/components/QRScanner';
 import LoadingAnimation from '@/components/LoadingAnimation';
 import ShareButton from '@/components/ShareButton';
-import SmoothCursor from '@/components/SmoothCursor';
+import { SmoothCursor } from '@/components/ui/smooth-cursor';
 import AnimatedDownloadButton from '@/components/AnimatedDownloadButton';
-import ThemeToggle from '@/components/ThemeToggle';
+import SimpleThemeToggle from '@/components/SimpleThemeToggle';
 import LoginForm from '@/components/LoginForm';
 import SignUpForm from '@/components/SignUpForm';
 import CookieNotice from '@/components/CookieNotice';
@@ -35,6 +35,14 @@ const Index = () => {
   const [downloaded, setDownloaded] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Function to truncate URL if it's too long for QR code
+  const getTruncatedUrl = (inputUrl: string, maxLength: number = 2000) => {
+    if (inputUrl.length <= maxLength) {
+      return inputUrl;
+    }
+    return inputUrl.substring(0, maxLength) + '...';
+  };
 
   const downloadQRCode = () => {
     setIsGenerating(true);
@@ -107,13 +115,25 @@ const Index = () => {
       <div className={`relative z-10 min-h-screen ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} backdrop-blur-sm`}>
         {/* Theme Toggle */}
         <div className="fixed top-4 right-4 z-50">
-          <ThemeToggle isDarkMode={isDarkMode} onToggle={setIsDarkMode} />
+          <SimpleThemeToggle isDarkMode={isDarkMode} onToggle={setIsDarkMode} />
         </div>
 
         {/* Auth Buttons */}
         <div className="fixed top-4 left-4 z-50 flex gap-2">
-          <Button onClick={() => setShowLogin(true)} variant="outline">Login</Button>
-          <Button onClick={() => setShowSignUp(true)} variant="outline">Sign Up</Button>
+          <Button 
+            onClick={() => setShowLogin(true)} 
+            variant="outline"
+            className={isDarkMode ? 'text-white border-white hover:bg-white hover:text-black' : ''}
+          >
+            Login
+          </Button>
+          <Button 
+            onClick={() => setShowSignUp(true)} 
+            variant="outline"
+            className={isDarkMode ? 'text-white border-white hover:bg-white hover:text-black' : ''}
+          >
+            Sign Up
+          </Button>
         </div>
 
         <div className="max-w-7xl mx-auto pt-12 px-4">
@@ -199,7 +219,7 @@ const Index = () => {
                             <QRCode
                               size={qrSize[0]}
                               style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                              value={url}
+                              value={getTruncatedUrl(url)}
                               viewBox={`0 0 ${qrSize[0]} ${qrSize[0]}`}
                               bgColor={bgColor}
                               fgColor={fgColor}
@@ -207,7 +227,7 @@ const Index = () => {
                           </div>
                         )}
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 items-center">
                           <AnimatedDownloadButton 
                             onClick={downloadQRCode}
                             disabled={isGenerating}
@@ -248,7 +268,7 @@ const Index = () => {
                         </div>
 
                         {/* Size Control Section */}
-                        <div className={`space-y-4 p-6 ${isDarkMode ? 'bg-gradient-to-r from-violet-900/40 to-purple-900/40 border-2 border-violet-300/50' : 'bg-gradient-to-r from-violet-100/40 to-purple-100/40 border-2 border-violet-300/50'} rounded-xl`}>
+                        <div className={`space-y-4 p-6 ${isDarkMode ? 'bg-gradient-to-r from-violet-900/40 to-purple-900/40 border-2 border-violet-300/50' : 'bg-gradient-to-r from-violet-100/40 to-purple-100/40 border-2 border-violet-300/50'} rounded-xl hover:scale-105 transition-transform duration-300`}>
                           <Label className={`text-lg font-bold ${isDarkMode ? 'text-violet-300' : 'text-gray-800'} flex items-center gap-2`}>
                             <Ruler className="w-5 h-5" />
                             QR Code Size
