@@ -6,36 +6,84 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, ScanQrCode } from 'lucide-react';
+import jsQR from 'jsqr';
 
 const QRScanner = () => {
   const [scannedData, setScannedData] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const processImage = (imageFile: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        if (!ctx) {
+          reject(new Error('Could not get canvas context'));
+          return;
+        }
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        if (code) {
+          resolve(code.data);
+        } else {
+          reject(new Error('No QR code found in image'));
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = URL.createObjectURL(imageFile);
+    });
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      // For demo purposes, we'll simulate QR scanning
-      // In a real implementation, you'd use a library like jsQR
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Simulate successful QR code detection
-        const mockData = "https://example.com/scanned-qr";
-        setScannedData(mockData);
-        toast({
-          title: "QR Code Scanned!",
-          description: "Successfully extracted data from the image",
-        });
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
       toast({
-        title: "Scan Failed",
-        description: "Could not detect QR code in the image",
+        title: "Invalid File",
+        description: "Please select an image file",
         variant: "destructive",
       });
+      return;
+    }
+
+    setIsScanning(true);
+
+    try {
+      const qrData = await processImage(file);
+      setScannedData(qrData);
+      toast({
+        title: "QR Code Scanned!",
+        description: "Successfully detected QR code in the image",
+      });
+    } catch (error) {
+      console.error('QR scanning error:', error);
+      toast({
+        title: "No QR Code Found",
+        description: "Could not detect a valid QR code in this image",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScanning(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -56,10 +104,11 @@ const QRScanner = () => {
           <Label className="text-white">Upload Image to Scan</Label>
           <Button
             onClick={triggerFileUpload}
+            disabled={isScanning}
             className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Choose Image
+            {isScanning ? 'Scanning...' : 'Choose Image'}
           </Button>
           <Input
             ref={fileInputRef}
