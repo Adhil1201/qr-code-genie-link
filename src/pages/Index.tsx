@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import QRCode from 'react-qr-code';
-import { Download, Link2, Settings, Palette, Ruler, Sparkles, Shield, Zap } from 'lucide-react';
+import { Download, QrCode, Settings, Palette, Ruler, Sparkles, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +23,7 @@ import SignUpForm from '@/components/SignUpForm';
 import CookieNotice from '@/components/CookieNotice';
 
 const Index = () => {
-  const [url, setUrl] = useState('https://lovable.dev');
+  const [url, setUrl] = useState('');
   const [qrSize, setQrSize] = useState([256]);
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
@@ -143,7 +143,7 @@ const Index = () => {
               <div className="relative">
                 <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-green-500 via-violet-500 to-green-500' : 'bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500'} rounded-full blur-lg opacity-75 animate-pulse`}></div>
                 <div className={`relative p-4 ${isDarkMode ? 'bg-black/20' : 'bg-white/20'} backdrop-blur-sm rounded-full border ${isDarkMode ? 'border-green-300/30' : 'border-white/30'}`}>
-                  <Link2 className={`w-12 h-12 ${isDarkMode ? 'text-green-400' : 'text-gray-800'}`} />
+                  <QrCode className={`w-12 h-12 ${isDarkMode ? 'text-green-400' : 'text-gray-800'}`} />
                 </div>
               </div>
             </div>
@@ -189,7 +189,7 @@ const Index = () => {
                     {/* URL Input Section */}
                     <div className="space-y-4">
                       <Label className={`text-lg font-bold ${isDarkMode ? 'text-green-300' : 'text-gray-800'} flex items-center gap-2`}>
-                        <Link2 className="w-5 h-5" />
+                        <QrCode className="w-5 h-5" />
                         Website URL
                       </Label>
                       <Input
