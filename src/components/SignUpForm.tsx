@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import './LoginForm.css';
@@ -9,11 +8,11 @@ interface SignUpFormProps {
 
 const SignUpForm: React.FC<SignUpFormProps> = ({ onClose }) => {
   const handleGoogleSignUp = () => {
-    window.open('https://accounts.google.com/oauth/authorize', '_blank');
+    window.open('https://accounts.google.com/signup', '_blank');
   };
 
   const handleGithubSignUp = () => {
-    window.open('https://github.com/login/oauth/authorize', '_blank');
+    window.open('https://github.com/signup', '_blank');
   };
 
   return (

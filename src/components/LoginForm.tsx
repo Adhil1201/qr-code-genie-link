@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import './LoginForm.css';
@@ -9,11 +8,11 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
   const handleGoogleLogin = () => {
-    window.open('https://accounts.google.com/oauth/authorize', '_blank');
+    window.open('https://accounts.google.com/signin', '_blank');
   };
 
   const handleGithubLogin = () => {
-    window.open('https://github.com/login/oauth/authorize', '_blank');
+    window.open('https://github.com/login', '_blank');
   };
 
   return (

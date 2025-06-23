@@ -47,28 +47,25 @@ const QRGeneratorCard: React.FC<QRGeneratorCardProps> = ({
     return inputUrl.substring(0, maxLength) + '...';
   };
 
-  const downloadQRCode = async () => {
+  const downloadQRCode = () => {
     if (!url) return;
     
     setIsGenerating(true);
     
-    try {
-      // Wait a moment for any animations to settle
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+    // Small delay to show loading animation
+    setTimeout(() => {
       const svg = qrRef.current?.querySelector('svg');
       if (!svg) {
-        throw new Error('QR code not found');
+        setIsGenerating(false);
+        return;
       }
 
-      // Clone the SVG to avoid modifying the original
-      const svgClone = svg.cloneNode(true) as SVGElement;
-      
-      // Create a canvas with higher resolution for better quality
+      // Create a canvas to convert SVG to PNG
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        throw new Error('Could not get canvas context');
+        setIsGenerating(false);
+        return;
       }
 
       const scaleFactor = 2; // For higher quality
@@ -80,52 +77,46 @@ const QRGeneratorCard: React.FC<QRGeneratorCardProps> = ({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Convert SVG to image
-      const svgData = new XMLSerializer().serializeToString(svgClone);
+      const svgData = new XMLSerializer().serializeToString(svg);
       const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
       const svgUrl = URL.createObjectURL(svgBlob);
 
       const img = new Image();
-      
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          URL.revokeObjectURL(svgUrl);
-          
-          // Create download link
-          canvas.toBlob((blob) => {
-            if (!blob) {
-              reject(new Error('Failed to create image blob'));
-              return;
-            }
-            
+      img.onload = () => {
+        // Draw the image on canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Create download link
+        canvas.toBlob((blob) => {
+          if (blob) {
             const downloadUrl = URL.createObjectURL(blob);
             const downloadLink = document.createElement('a');
-            downloadLink.download = `qrcode-${Date.now()}.png`;
+            downloadLink.download = `qr-code-${Date.now()}.png`;
             downloadLink.href = downloadUrl;
+            document.body.appendChild(downloadLink);
             downloadLink.click();
+            document.body.removeChild(downloadLink);
             
             // Cleanup
             URL.revokeObjectURL(downloadUrl);
             
             setDownloaded(true);
             setTimeout(() => setDownloaded(false), 3000);
-            resolve(true);
-          }, 'image/png', 1.0);
-        };
+          }
+        }, 'image/png', 1.0);
         
-        img.onerror = () => {
-          URL.revokeObjectURL(svgUrl);
-          reject(new Error('Failed to load SVG image'));
-        };
-      });
+        // Cleanup
+        URL.revokeObjectURL(svgUrl);
+        setIsGenerating(false);
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(svgUrl);
+        setIsGenerating(false);
+      };
 
       img.src = svgUrl;
-      
-    } catch (error) {
-      console.error('Download failed:', error);
-    } finally {
-      setIsGenerating(false);
-    }
+    }, 500);
   };
 
   return (
@@ -182,7 +173,7 @@ const QRGeneratorCard: React.FC<QRGeneratorCardProps> = ({
             <div className="flex gap-4 items-center">
               <AnimatedDownloadButton 
                 onClick={downloadQRCode}
-                disabled={isGenerating}
+                disabled={isGenerating || !url}
                 downloaded={downloaded}
               />
               
